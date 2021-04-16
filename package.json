@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/bramvanaggelen/InDaHouse/issues"
   },
-  "homepage": "https://github.com/bramvanaggelen/InDaHouse#readme"
+  "homepage": "https://github.com/bramvanaggelen/InDaHouse#readme",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "mysql": "^2.18.1"
+  }
 }
