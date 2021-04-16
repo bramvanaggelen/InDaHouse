@@ -1,0 +1,19 @@
+{
+  "name": "indahouse",
+  "version": "1.0.0",
+  "description": "Discord bot for in house tournaments",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bramvanaggelen/InDaHouse.git"
+  },
+  "author": "Bram",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bramvanaggelen/InDaHouse/issues"
+  },
+  "homepage": "https://github.com/bramvanaggelen/InDaHouse#readme"
+}
