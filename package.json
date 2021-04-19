@@ -18,6 +18,8 @@
   "homepage": "https://github.com/bramvanaggelen/InDaHouse#readme",
   "dependencies": {
     "discord.js": "^12.5.3",
-    "mysql": "^2.18.1"
+    "moment": "^2.29.1",
+    "mysql": "^2.18.1",
+    "sanitize": "^2.1.0"
   }
 }

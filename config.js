@@ -3,8 +3,8 @@ module.exports = {
         'bot_token':'',
         'bot_key':'$',
         'db_host':'localhost',
-        'db_user':'db_user',
-        'db_database':'database',
-        'db_password':'password'
+        'db_user':'root',
+        'db_database':'in_da_house',
+        'db_password':'root',
     }
 }
