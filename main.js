@@ -42,7 +42,7 @@ client.on('message', (message) => {
     if(message.content[0] != configuration.bot_key){
         return;
     }
-    const possibleFields = ['name','time','date','max-players','captains','description'];
+    const possibleFields = ['name','time','max-players','captains','description'];
     let args = message.content.substring(1);
     const command = args.substring(0,args.indexOf(' ') != -1 ? args.indexOf(' ') : args.length);
     args = args.indexOf(' ') != -1 ? args.substring(args.indexOf(' ')+1) : '';
@@ -137,7 +137,7 @@ client.on('message', (message) => {
                 let helptext = "This is a bot written by Bram. The following commands can be executed:\n" +
                     "```new {name}: This command makes a new event with the name {name}. Which you can later update.```" +
                     "```update/set {eventName?} {classifier} {value}: Updates the event with the name evenName, if its not put in it will use the last updated one. " +
-                    "the classifier can be ['name','time','date','max-players','captains','description'].\nName is the name of the event, time is when it will take place, " +
+                    "the classifier can be ['name','time','max-players','captains','description'].\nName is the name of the event, time is when it will take place, " +
                     "max-players is the amount of players needed before the making of the teams begins and the registration is disabled, captains is the amount of captains " +
                     "description is any other information you want to say about the event which will be shown when the registration is enabled```" +
                     "```start {eventName?}: start the event which shows the message people can react to to say they will play. EventName can be used to trigger a specific event, but it will by default use the last changed one```" +
@@ -374,14 +374,18 @@ function startSelection(serverId,eventName,channel){
             let players = JSON.parse(result.players);
             let captains = [];
             let message = "The captains of this match will be: :drum: \n \n \n";
-            for(let i = 0; i < result.captains;i++){
-                let captain = Math.floor(Math.random()*(players.length-0.01));
-                let player = players[captain];
-                player.team = i+1;
-                captains.push(player);
-                players.splice(captain,1);
-                message += i == result.captains -1 ? " and <@"+player.id+">" :"<@"+player.id+">"
+            if(parseInt(result.captains)+"" == result.captains) {
+                for (let i = 0; i < result.captains; i++) {
+                    let captain = Math.floor(Math.random() * (players.length - 0.01));
+                    let player = players[captain];
+                    player.team = i + 1;
+                    captains.push(player);
+                    players.splice(captain, 1);
+                    message += i == result.captains - 1 ? " and <@" + player.id + ">" : "<@" + player.id + ">"
+                }
             }
+            else
+                captains = JSON.parse(result.captains);
             players = players.concat(captains);
             connection.query("UPDATE events SET players = '"+JSON.stringify(players)+"',captains = '"+JSON.stringify(captains)+"' WHERE id="+result.id);
             result.players = players;
