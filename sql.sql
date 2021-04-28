@@ -17,7 +17,6 @@ CREATE TABLE `events` (
     `max-players` int(5) UNSIGNED default '10',
     `players` TEXT,
     `captains` VARCHAR(255) default '2',
-    `current_picker_id` varchar(255)
     `name` VARCHAR(255),
     `description` TEXT,
     `message_id` VARCHAR(255),
