@@ -14,9 +14,9 @@ DROP TABLE IF EXISTS `events`;
 CREATE TABLE `events` (
     `id` int(255) UNSIGNED NOT NULL AUTO_INCREMENT,
     `server_id` int(255) UNSIGNED,
-    `max-players` int(5) UNSIGNED default('10'),
+    `max-players` int(5) UNSIGNED default '10',
     `players` TEXT,
-    `captains` TEXT default('2'),
+    `captains` TEXT default '2',
     `current_picker_id` varchar(255)
     `name` VARCHAR(255),
     `description` TEXT,
