@@ -48,7 +48,7 @@ client.on('message', (message) => {
     args = args.indexOf(' ') != -1 ? args.substring(args.indexOf(' ')+1) : '';
     console.log(command,args);
     let serverId = 0;
-    connection.query("SELECT * FROM servers WHERE discord_id = "+ sanitizer.value(message.channel.guild.id,'int'),function (err,result){
+    connection.query("SELECT * FROM servers WHERE discord_id = ?" ,[sanitizer.value(message.channel.guild.id,'int')],function (err,result){
         if(err){
             console.log("error");
             console.log(err)
@@ -64,7 +64,7 @@ client.on('message', (message) => {
                     if(args != "")
                         name = args;
                     newEvent(serverInfo,name);
-                    message.channel.send("New event with the name ```"+name+"``` made");
+                    message.channel.send("New event with the name `"+name+"` made");
                 }
                 else
                     message.channel.send("The chosen name is not allowed");
@@ -76,7 +76,7 @@ client.on('message', (message) => {
                     args.indexOf(' ') != -1 ? args.substring(args.indexOf(' ')+1) : '',
                 ]
                 if(possibleFields.includes(words[0])){
-                    connection.query("SELECT name FROM events WHERE server_id = "+serverId+" ORDER BY updated_at DESC LIMIT 0,1",function (err,result){
+                    connection.query("SELECT name FROM events WHERE server_id = ? ORDER BY updated_at DESC LIMIT 0,1",[serverId],function (err,result){
                         if(result.length) {
                             handleUpdate(serverId,result[0].name, words)
                         }
@@ -85,7 +85,7 @@ client.on('message', (message) => {
                     });
                 }
                 else{
-                    connection.query("SELECT name FROM events WHERE server_id = "+serverId+" AND name = '"+sanitizer.value(words[0],'str')+"'",function (err,result){
+                    connection.query("SELECT name FROM events WHERE server_id = ? AND name = ?",[serverId,sanitizer.value(words[0],'str')],function (err,result){
                         if(err){
                             console.log(err)
                             throw err;
@@ -106,7 +106,7 @@ client.on('message', (message) => {
                 break;
             case 'start':
                 if(args == ''){
-                    connection.query("SELECT name FROM events WHERE server_id = "+serverId+" ORDER BY updated_at DESC LIMIT 0,1",function (err,result){
+                    connection.query("SELECT name FROM events WHERE server_id = ? ORDER BY updated_at DESC LIMIT 0,1",[serverId],function (err,result){
                         if(result.length) {
                             sendInfoMessage(result[0].name, serverId,true)
                         }
@@ -120,7 +120,7 @@ client.on('message', (message) => {
                 break;
             case 'status':
                 if(args == ''){
-                    connection.query("SELECT name FROM events WHERE server_id = "+serverId+" ORDER BY updated_at DESC LIMIT 0,1",function (err,result){
+                    connection.query("SELECT name FROM events WHERE server_id = ? ORDER BY updated_at DESC LIMIT 0,1",[serverId],function (err,result){
                         if(result.length) {
                             sendInfoMessage(result[0].name, serverId)
                         }
@@ -148,7 +148,7 @@ client.on('message', (message) => {
     });
 
     function newEvent (serverInfo,name){
-        connection.query("INSERT INTO events (`server_id`,`name`,`updated_at`) VALUES ("+serverInfo.id+",'"+name+"',NOW())",function (err,result){
+        connection.query("INSERT INTO events (`server_id`,`name`,`updated_at`) VALUES (?,?,NOW())",[serverInfo.id,name],function (err,result){
             if(err){
                 console.log(err)
                 throw err;
@@ -175,7 +175,7 @@ client.on('message', (message) => {
     }
 
     function updateEvent(serverId,eventName,update,newValue){
-        connection.query("UPDATE events SET `"+update+"`='"+newValue+"' WHERE name = '"+eventName+"' AND server_id = "+serverId,function (err,result){
+        connection.query("UPDATE events SET `"+update+"`=? WHERE name = ? AND server_id = ?",[newValue,eventName,serverId],function (err,result){
             if(err){
                 console.log(err);
                 throw err;
@@ -190,7 +190,7 @@ client.on('message', (message) => {
     }
 
     function sendInfoMessage(eventName,serverId,isStart = false){
-        connection.query("SELECT * FROM events WHERE server_id = "+serverId+" AND name = '"+eventName+"' ORDER BY updated_at DESC LIMIT 0,1",function (err,result){
+        connection.query("SELECT * FROM events WHERE server_id = ? AND name = ? ORDER BY updated_at DESC LIMIT 0,1",[serverId,eventName],function (err,result){
             if(err){
                 console.log(err)
                 throw err;
@@ -215,7 +215,7 @@ client.on('message', (message) => {
                 message.channel.send(to_send).then((message) =>{
                     if(isStart){
                         message.react('✅');
-                        connection.query("UPDATE events SET `message_id`="+message.id+", players=NULL WHERE name = '"+eventName+"' AND server_id = "+serverId,function (err,result){
+                        connection.query("UPDATE events SET `message_id`=?, players=NULL WHERE name = ? AND server_id = ?",[message.id,eventName,serverId],function (err,result){
                             if(err){
                                 console.log(err);
                                 throw err;
@@ -235,7 +235,7 @@ client.on('messageReactionRemove',(messageReaction,user)=> {
     if (user.bot)
         return;
     if (messageReaction["_emoji"].name === "✅") {
-        connection.query("SELECT * FROM events WHERE message_id=" + messageReaction.message.id, function (err, result) {
+        connection.query("SELECT * FROM events WHERE message_id=?",[messageReaction.message.id], function (err, result) {
             if (err) {
                 console.log(err);
                 throw err;
@@ -250,7 +250,7 @@ client.on('messageReactionRemove',(messageReaction,user)=> {
                     people.splice(i,1);
                 }
             }
-            connection.query("UPDATE events SET players = '" + JSON.stringify(people) + "' WHERE message_id=" + messageReaction.message.id);
+            connection.query("UPDATE events SET players = ? WHERE message_id=?",[JSON.stringify(people),messageReaction.message.id]);
         });
     }
 });
@@ -259,7 +259,7 @@ client.on('messageReactionAdd',(messageReaction,user)=>{
     if(user.bot)
         return;
     if(messageReaction["_emoji"].name === "✅"){
-        connection.query("SELECT * FROM events WHERE message_id="+messageReaction.message.id,function (err,result){
+        connection.query("SELECT * FROM events WHERE message_id=?",[messageReaction.message.id],function (err,result){
             if(err){
                 console.log(err);
                 throw err;
@@ -273,7 +273,7 @@ client.on('messageReactionAdd',(messageReaction,user)=>{
                 name:user.username,
                 team:0
             });
-            connection.query("UPDATE events SET players = '"+JSON.stringify(people)+"' WHERE message_id="+messageReaction.message.id);
+            connection.query("UPDATE events SET players = ? WHERE message_id=?",[JSON.stringify(people),messageReaction.message.id]);
             if(people.length == result['max-players']){
                 startSelection(result.server_id,result.name,messageReaction.message.channel);
             }
@@ -283,7 +283,7 @@ client.on('messageReactionAdd',(messageReaction,user)=>{
         if(Object.keys(votableMessages).includes(messageReaction.message.id) && user.id == votableMessages[messageReaction.message.id]){
             const emojiNames = ['1⃣','2⃣','3⃣','4⃣','5⃣','6⃣','7⃣','8⃣','9⃣','0⃣'];
             if(emojiNames.includes(messageReaction["_emoji"].name)){
-                connection.query("SELECT * FROM events WHERE message_id = "+messageReaction.message.id,function (err,result){
+                connection.query("SELECT * FROM events WHERE message_id = ?",[messageReaction.message.id],function (err,result){
                     if(err){
                         console.log(err);
                         throw err;
@@ -303,10 +303,10 @@ client.on('messageReactionAdd',(messageReaction,user)=>{
                         }
                     }
                     votableMessages.splice(messageReaction.message.id,1);
-                    messageReaction.message.delete({ timeout: 2000 });
+                    messageReaction.message.delete({ timeout: 1000 });
                     result.players = players;
                     result.captains = JSON.parse(result.captains);
-                    connection.query("UPDATE events SET players = '"+JSON.stringify(players)+"' WHERE id="+result.id);
+                    connection.query("UPDATE events SET players = ? WHERE id=?",[JSON.stringify(players),result.id]);
                     selectTeammate(messageReaction.message.channel,result);
                 });
                 // const pickablePlayers
@@ -318,7 +318,7 @@ client.on('messageReactionAdd',(messageReaction,user)=>{
 
 
 client.on('guildCreate',(server)=>{
-    connection.query("SELECT * FROM servers WHERE discord_id = "+sanitizer.value(server.id, 'int')+"",function (err,result){
+    connection.query("SELECT * FROM servers WHERE discord_id = ?",[sanitizer.value(server.id, 'int')],function (err,result){
         if(err){
             console.log(err,result);
             throw err;
@@ -327,7 +327,7 @@ client.on('guildCreate',(server)=>{
             console.log('server already exists with id: '+server.id);
         }
         else{
-            connection.query("INSERT INTO servers (`name`,`discord_id`) VALUES ('"+sanitizer.value(server.name,'str')+"',"+sanitizer.value(server.id,'int')+")",function (err2,result2){
+            connection.query("INSERT INTO servers (`name`,`discord_id`) VALUES (?,?)",[sanitizer.value(server.name,'str'),sanitizer.value(server.id,'int')],function (err2,result2){
                 if(err2){
                     console.log(err2,result2);
                     throw err2;
@@ -340,7 +340,7 @@ client.on('guildCreate',(server)=>{
 });
 
 client.on('guildDelete',(server)=>{
-    connection.query("DELETE FROM servers WHERE discord_id = "+sanitizer.value(server.id, 'int')+"",function (err,result){
+    connection.query("DELETE FROM servers WHERE discord_id = ?",[sanitizer.value(server.id, 'int')],function (err,result){
         if(err){
             console.log(err,result);
             throw err;
@@ -352,7 +352,7 @@ client.on('guildDelete',(server)=>{
 });
 
 client.on('guildUpdate',(oldServer,newServer)=>{
-    connection.query("UPDATE servers SET name = '"+sanitizer.value(newServer.name,'str')+"' WHERE discord_id = "+sanitizer.value(newServer.id, 'int')+"",function (err,result){
+    connection.query("UPDATE servers SET name = ? WHERE discord_id = ?",[sanitizer.value(newServer.name,'str'),sanitizer.value(newServer.id, 'int')],function (err,result){
         if(err){
             console.log(err,result);
             throw err;
@@ -364,7 +364,7 @@ client.on('guildUpdate',(oldServer,newServer)=>{
 });
 
 function startSelection(serverId,eventName,channel){
-    connection.query("SELECT * FROM events WHERE server_id = "+serverId+" AND name = '"+eventName+"' ORDER BY updated_at DESC LIMIT 0,1",function (err,result){
+    connection.query("SELECT * FROM events WHERE server_id = ? AND name = ? ORDER BY updated_at DESC LIMIT 0,1",[serverId,eventName],function (err,result){
         if(err){
             console.log(err)
             throw err;
@@ -373,7 +373,7 @@ function startSelection(serverId,eventName,channel){
             result = result[0];
             let players = JSON.parse(result.players);
             let captains = [];
-            let message = "The captains of this match will be: :drum: \n \n \n";
+            let message = "The captains of this match will be: :drum: \n ";
             if(parseInt(result.captains)+"" == result.captains) {
                 for (let i = 0; i < result.captains; i++) {
                     let captain = Math.floor(Math.random() * (players.length - 0.01));
@@ -387,7 +387,7 @@ function startSelection(serverId,eventName,channel){
             else
                 captains = JSON.parse(result.captains);
             players = players.concat(captains);
-            connection.query("UPDATE events SET players = '"+JSON.stringify(players)+"',captains = '"+JSON.stringify(captains)+"' WHERE id="+result.id);
+            connection.query("UPDATE events SET players = ?,captains = ? WHERE id=?",[JSON.stringify(players),JSON.stringify(captains),result.id]);
             result.players = players;
             result.captains = captains;
             message += "\n the choosing of teammates will begin shortly!"
@@ -431,7 +431,7 @@ function selectTeammate(channel,eventInfo){
     channel.send(message).then(async (message) =>{
         if(pickablePeople.length > 0){
             votableMessages[message.id] = lowestCaptain.id;
-            connection.query("UPDATE events SET `message_id`="+message.id+" WHERE id = "+eventInfo.id);
+            connection.query("UPDATE events SET `message_id`=? WHERE id = ?",[message.id,eventInfo.id]);
                 try {
                 for(let i = 0; i <= maxI;i++){
                     await message.react(emojiNames[i]);
